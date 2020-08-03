@@ -1,0 +1,296 @@
+<html>
+<style> 
+div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 90px;					
+    height: 30px;					
+    padding: 2px;	
+    background: lightsteelblue;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
+</style>
+
+<script src="https://d3js.org/d3.v4.js"></script>
+<!-- Load d3-annotation -->
+<script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+<style> rect {fill: lightblue; stroke: black; }</style>
+<body>
+<p style="color:red;padding-left:500px;font-size:20px;font-family: Arial, Helvetica, sans-serif;">SP 500 Index vs 2020 COVID-19 Pandemic</p>
+<svg id="main_vis" width=1430 height=770>
+
+<circle cx="520" cy="367" r="5" fill="none" stroke="steelblue"/>
+<text x="510" y="380" font-size="10px">3226</text>
+<text x="685" y="350" font-size="10px">3265</text>
+<text x="685" y="360" font-size="10px">3256</text>
+<text x="685" y="390" font-size="10px">3160</text>
+
+<div id="tooltip" class="tooltip" style="opacity:0">test</div>
+
+</svg>
+
+<svg id="slider" width=1400 height=30>
+<rect x="50" y="2.5" width="1350" height="10"/>
+
+<rect x="510" width="10" height="15" style="fill:steelblue"/>
+
+<text x="492" y="30" font-size="15px">Feb 24th</text>
+</svg>
+<p> </p>
+<a>Slide 1</a> <a href="scene_2.html">Slide 2</a> <a href="scene_3.html">Slide 3</a>
+<p style="font-size:20px; font-family: Arial, Helvetica, sans-serif;">  In this presentation I would like to demonstrate how volatile the stock market is at the time of crisis and how much volatility is susceptible to current events.
+ <br>At the time of crisis traditional trend analysis is almost useless in predicting the forward trend of the stock market. 
+ </p>
+
+ <p style="font-family: Arial, Helvetica, sans-serif;">  At the time around late Feb, the stock market sits around all-time high and there were only double digit numbers of cases of COVID-19 in the US. 
+ Despite the recent dip, trend analysis suggests the stock market will move largely sideway or slightly trend downwards. 
+ But on Feb 24th, the report of the WHO-China Joint Mission on COVID-19 was released and informed the world how dangerous and ill prepared the world is facing the threat of COVID-19. 
+ And the realization of reality combined with COVID-19 case growth dictated the movement of stock for the next couple of months. Please continue to the next slide.
+ </p>
+ 
+ <a href="https://www.who.int/docs/default-source/coronaviruse/who-china-joint-mission-on-covid-19-final-report.pdf?sfvrsn=fce87f4e_2">For more information on the report of the WHO-China Joint Mission on COVID-19, Click Here!</a>
+
+<script>
+
+
+// lines
+d3.csv("https://raw.githubusercontent.com/seress123/seress123.github.io/master/scene1_actual.csv",function(d){
+    return { date : d3.timeParse("%Y-%m-%d")(d.Date), value : d.Close }
+  },
+
+  function(data) {
+
+    // Add X axis 
+    var x = d3.scaleTime()
+      .domain([d3.timeParse("%Y-%m-%d")("2019-12-01"),d3.timeParse("%Y-%m-%d")("2020-08-01")])
+      .range([ 50, 1400 ]);
+    // call x axis
+    d3.select("#main_vis").append("g")
+      .attr("transform", "translate(0," +750+")")
+      .call(d3.axisBottom(x));
+
+    // Add Y axis
+    var y = d3.scaleLinear()
+      .domain([1900,4500])
+      .range([ 750, 0 ]);
+      
+    // call y axis
+    d3.select("#main_vis").append("g")
+      .attr("transform", "translate("+50+",0)")
+      .call(d3.axisLeft(y));
+
+    // Add the line
+    d3.select("#main_vis").append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 2.5)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.date) })
+        .y(function(d) { return y(d.value) })
+        )
+
+
+})
+
+// dots toolpit
+d3.csv("https://raw.githubusercontent.com/seress123/seress123.github.io/master/scene1_actual.csv",function(d){
+    return { date : d3.timeParse("%Y-%m-%d")(d.Date), value : d.Close }
+  },
+
+  function(data) {
+
+    // Add X axis 
+    var x = d3.scaleTime()
+      .domain([d3.timeParse("%Y-%m-%d")("2019-12-01"),d3.timeParse("%Y-%m-%d")("2020-08-01")])
+      .range([ 50, 1400 ]);
+    // call x axis
+    d3.select("#main_vis").append("g")
+      .attr("transform", "translate(0," +750+")")
+      .call(d3.axisBottom(x));
+
+    // Add Y axis
+    var y = d3.scaleLinear()
+      .domain([1900,4500])
+      .range([ 750, 0 ]);
+      
+    // call y axis
+    d3.select("#main_vis").append("g")
+      .attr("transform", "translate("+50+",0)")
+      .call(d3.axisLeft(y));
+
+    // Add the line
+    d3.select("#main_vis").selectAll("dot")	
+        .data(data)			
+    .enter().append("circle")								
+        .attr("r", 3.5)		
+        .attr("cx", function(d) { return x(d.date); })		 
+        .attr("cy", function(d) { return y(d.value); })
+        .attr("style","fill:steelblue;")
+      .on("mouseover",function(d){
+      d3.select("#tooltip").transition()		
+                .duration(200)		
+                .style("opacity", .9);	
+      d3.select("#tooltip").html(d3.timeFormat("%b %d, %Y")(d.date)+"<br/>"+d.value)	
+                .style("left", (d3.event.pageX) + "px")		
+                .style("top", (d3.event.pageY - 28) + "px");	
+      })
+      .on("mouseout", function(d) {		
+            d3.select("#tooltip").transition()		
+                .duration(500)		
+                .style("opacity", 0);	
+        });
+
+})
+
+// add 1mo based projection
+d3.csv("https://raw.githubusercontent.com/seress123/seress123.github.io/master/scene1_1mo_proj.csv",function(d){
+    return { date : d3.timeParse("%Y-%m-%d")(d.Date), value : d.Close }
+  },
+
+  function(data) {
+
+    // Add X axis 
+    var x = d3.scaleTime()
+      .domain([d3.timeParse("%Y-%m-%d")("2019-12-01"),d3.timeParse("%Y-%m-%d")("2020-08-01")])
+      .range([ 50, 1400 ]);
+
+    // Add Y axis
+    var y = d3.scaleLinear()
+      .domain([1900,4500])
+      .range([ 750, 0 ]);
+
+    // Add the line
+    d3.select("#main_vis").append("path")
+      .datum(data)
+      .attr("stroke", "grey")
+      .attr("stroke-width", 2.5)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.date) })
+        .y(function(d) { return y(d.value) })
+        )
+
+})
+
+// add 3mo based projection
+d3.csv("https://raw.githubusercontent.com/seress123/seress123.github.io/master/scene1_3mo_proj.csv",function(d){
+    return { date : d3.timeParse("%Y-%m-%d")(d.Date), value : d.Close }
+  },
+
+  function(data) {
+
+    // Add X axis 
+    var x = d3.scaleTime()
+      .domain([d3.timeParse("%Y-%m-%d")("2019-12-01"),d3.timeParse("%Y-%m-%d")("2020-08-01")])
+      .range([ 50, 1400 ]);
+
+    // Add Y axis
+    var y = d3.scaleLinear()
+      .domain([1900,4500])
+      .range([ 750, 0 ]);
+
+    // Add the line
+    d3.select("#main_vis").append("path")
+      .datum(data)
+      .attr("stroke", "grey")
+      .attr("stroke-width", 2.5)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.date) })
+        .y(function(d) { return y(d.value) })
+        );
+        
+
+})
+
+
+// add 1yr based projection
+d3.csv("https://raw.githubusercontent.com/seress123/seress123.github.io/master/scene1_1yr_proj.csv",function(d){
+    return { date : d3.timeParse("%Y-%m-%d")(d.Date), value : d.Close }
+  },
+
+  function(data) {
+
+    // Add X axis 
+    var x = d3.scaleTime()
+      .domain([d3.timeParse("%Y-%m-%d")("2019-12-01"),d3.timeParse("%Y-%m-%d")("2020-08-01")])
+      .range([ 50, 1400 ]);
+
+    // Add Y axis
+    var y = d3.scaleLinear()
+      .domain([1900,4500])
+      .range([ 750, 0 ]);
+
+    // Add the line
+    d3.select("#main_vis").append("path")
+      .datum(data)
+      .attr("stroke", "grey")
+      .attr("stroke-width", 2.5)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.date) })
+        .y(function(d) { return y(d.value) })
+        )
+
+})
+
+//-----------maina annotation------------
+
+const annotations1 = [
+  {
+    note: {
+      label: "Feb 24th: Report of the WHO-China Joint Mission on COVID-19 released (see more detail below)",
+      bgPadding: 10,
+    },
+    x: 520,
+    y: 367,
+    dy: -100,
+    dx: 0
+  },
+  {
+    note: {
+      label: "Projection based YoY Trend)",
+      bgPadding: 10,
+    },
+    x: 705,
+    y: 345,
+    dy: -100,
+    dx: 100
+  },
+  {
+  note: {
+      label: "Projection based QoQ Trend)",
+      bgPadding: 10,
+    },
+    x: 705,
+    y: 355,
+    dy: -50,
+    dx: 200
+  },
+  {
+  note: {
+      label: "Projection based MoM Trend)",
+      bgPadding: 10,
+    },
+    x: 705,
+    y: 385,
+    dy: -10,
+    dx: 200
+  }
+]
+
+const makeAnnotations = d3.annotation()
+  .type(d3.annotationLabel)
+  .annotations(annotations1)
+d3.select("#main_vis")
+  .append("g")
+  .attr("class", "annotation-group")
+  .call(makeAnnotations)
+
+
+  
+</script>
+
+
+</body>
+</html>
